@@ -87,7 +87,7 @@ const Home = () => {
         </Heading>
         <Text color={"gray.500"}>
           Omar Punks es una colección de Avatares randomizados cuya metadata es
-          almacenada on-chain. Poseen características únicas y sólo hay{" "}
+          almacenada on-chain. Poseen características únicas, sólo hay{" "}
           actualmente <Badge color="green.500">{supply.total}</Badge> en
           existencia y habrá un máximo de{" "}
           <Badge color="green.500">{supply.max}</Badge> Omar Punks.
