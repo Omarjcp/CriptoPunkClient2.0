@@ -6,13 +6,17 @@ import {
   Image,
   Stack,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { useWeb3React } from "@web3-react/core";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useOmarPunks from "../../hooks/useOmarPunks";
+import useTruncatedAddress from "../../hooks/useTruncatedAddress";
 
 const Home = () => {
+  const toast = useToast();
+  const [isMinting, setIsMinting] = useState(false);
   const [imageSrc, setImageSrc] = useState("");
   const [supply, setSupply] = useState({
     max: 0,
@@ -21,6 +25,7 @@ const Home = () => {
 
   const { active, account } = useWeb3React();
   const omarPunksContract = useOmarPunks();
+  const accountTruncated = useTruncatedAddress(account);
 
   const getPlatziPunksData = useCallback(async () => {
     if (omarPunksContract) {
@@ -46,6 +51,39 @@ const Home = () => {
     }
   }, [omarPunksContract, account]);
 
+  const mint = () => {
+    setIsMinting(true);
+
+    omarPunksContract.methods
+      .mint()
+      .send({
+        from: account,
+      })
+      .on("transactionHash", (txHash) => {
+        toast({
+          title: "Transaction send",
+          description: txHash,
+          status: "info",
+        });
+      })
+      .on("receipt", () => {
+        setIsMinting(false);
+        toast({
+          title: "Transaction successfully",
+          description: "Transaction successfully",
+          status: "success",
+        });
+      })
+      .on("error", (error) => {
+        setIsMinting(false);
+        toast({
+          title: "Transaction error",
+          description: error.message,
+          status: "error",
+        });
+      });
+  };
+
   useEffect(() => {
     getPlatziPunksData();
   }, [getPlatziPunksData]);
@@ -64,6 +102,7 @@ const Home = () => {
           fontSize={{ base: "3xl", sm: "4xl", lg: "6xl" }}
         >
           <Text
+            color="gray.200"
             as={"span"}
             position={"relative"}
             _after={{
@@ -73,26 +112,22 @@ const Home = () => {
               position: "absolute",
               bottom: 0,
               left: 0,
-              bg: "green.400",
+              bg: "pink.300",
               zIndex: -1,
               borderRadius: "50%",
             }}
           >
             Un Omar Punk
           </Text>
-          <br />
-          <Text as={"span"} color={"green.400"}>
-            nunca para de aprender
-          </Text>
         </Heading>
-        <Text color={"gray.500"}>
+        <Text color="gray.200">
           Omar Punks es una colección de Avatares randomizados cuya metadata es
           almacenada on-chain. Poseen características únicas, sólo hay{" "}
-          actualmente <Badge color="green.500">{supply.total}</Badge> en
+          actualmente <Badge color="pink.500">{supply.total}</Badge> en
           existencia y habrá un máximo de{" "}
-          <Badge color="green.500">{supply.max}</Badge> Omar Punks.
+          <Badge color="pink.500">{supply.max}</Badge> Omar Punks.
         </Text>
-        <Text color={"green.500"}>
+        <Text color="pink.100">
           Cada Omar Punk se genera de forma secuencial basado en tu address, usa
           el previsualizador para averiguar cuál sería tu Omar Punk si minteas
           en este momento
@@ -106,15 +141,24 @@ const Home = () => {
             size={"lg"}
             fontWeight={"normal"}
             px={6}
-            colorScheme={"green"}
-            bg={"green.400"}
-            _hover={{ bg: "green.500" }}
+            colorScheme={"pink"}
+            bg={"pink.400"}
+            _hover={{ bg: "pink.500" }}
             disabled={!omarPunksContract}
+            isLoading={isMinting}
+            onClick={mint}
           >
             Obtén tu punk
           </Button>
           <Link to="/punks">
-            <Button rounded={"full"} size={"lg"} fontWeight={"normal"} px={6}>
+            <Button
+              bg={"blue.100"}
+              _hover={{ bg: "gray.400" }}
+              rounded={"full"}
+              size={"lg"}
+              fontWeight={"normal"}
+              px={6}
+            >
               Galería
             </Button>
           </Link>
@@ -134,14 +178,14 @@ const Home = () => {
             <Flex mt={2}>
               <Badge>
                 Next ID:
-                <Badge ml={1} colorScheme="green">
-                  1
+                <Badge ml={1} colorScheme="pink">
+                  {parseInt(supply.total)}
                 </Badge>
               </Badge>
               <Badge ml={2}>
                 Address:
-                <Badge ml={1} colorScheme="green">
-                  0x0000...0000
+                <Badge ml={1} colorScheme="pink">
+                  {accountTruncated}
                 </Badge>
               </Badge>
             </Flex>
@@ -149,13 +193,15 @@ const Home = () => {
               onClick={getPlatziPunksData}
               mt={4}
               size="xs"
-              colorScheme="green"
+              colorScheme="pink"
             >
-              Actualizar
+              Update
             </Button>
           </>
         ) : (
-          <Badge mt={2}>Wallet desconectado</Badge>
+          <Badge colorScheme="pink" mt={2}>
+            Wallet disconnected
+          </Badge>
         )}
       </Flex>
     </Stack>

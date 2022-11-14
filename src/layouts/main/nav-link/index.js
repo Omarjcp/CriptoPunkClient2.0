@@ -10,7 +10,9 @@ const NavLink = ({ children, ...props }) => (
     _hover={{
       textDecoration: "none",
       bg: useColorModeValue("gray.200", "gray.700"),
+      color: "violet",
     }}
+    color="white"
     {...props}
   >
     {children}

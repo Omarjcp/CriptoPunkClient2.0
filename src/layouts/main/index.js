@@ -29,23 +29,23 @@ const MainLayout = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Flex minH="100vh" direction="column">
+    <Flex minH="100vh" direction="column" bg={"blackAlpha.700"}>
       <Box
         mx="auto"
         maxW={"7xl"}
         width="100%"
-        bg={useColorModeValue("white", "gray.800")}
+        bg={useColorModeValue("transparent", "gray.800")}
         px={4}
       >
         <Flex
-          bg={useColorModeValue("white", "gray.800")}
+          bg={useColorModeValue("transparent", "gray.800")}
           color={useColorModeValue("gray.600", "white")}
           minH={"60px"}
           py={{ base: 2 }}
           px={{ base: 4 }}
           borderBottom={1}
           borderStyle={"solid"}
-          borderColor={useColorModeValue("gray.200", "gray.900")}
+          borderColor={useColorModeValue("transparent", "gray.900")}
           alignItems={"center"}
           justifyContent={"space-between"}
         >
@@ -54,12 +54,13 @@ const MainLayout = ({ children }) => {
             icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
             aria-label={"Open Menu"}
             display={{ md: "none" }}
+            colorScheme="pink"
             onClick={isOpen ? onClose : onOpen}
           />
           <HStack spacing={8} alignItems={"center"}>
             <Flex alignItems="center">
               <Image src="./logo192.png" width="50px" />
-              <Heading size="md" color="violet" mt={0.2} ml={1}>
+              <Heading size="md" color="pink.400" mt={0.2} ml={1}>
                 Omar Punks
               </Heading>
             </Flex>
