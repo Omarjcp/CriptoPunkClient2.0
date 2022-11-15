@@ -11,18 +11,69 @@ import {
   Th,
   Thead,
   Tr,
+  useToast,
 } from "@chakra-ui/react";
 import { useWeb3React } from "@web3-react/core";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import Loading from "../../components/loading";
 import PunkCard from "../../components/punk-card";
 import RequestAccess from "../../components/request-access";
+import useOmarPunks from "../../hooks/useOmarPunks";
 import { useOmarPunkData } from "../../hooks/useOmarPunksData";
 
 const Punk = () => {
+  const toast = useToast();
   const { tokenId } = useParams();
-  const { active, account } = useWeb3React();
-  const { loading, punk } = useOmarPunkData(tokenId);
+  const { active, account, library } = useWeb3React();
+  const omarPunksContract = useOmarPunks();
+  const { loading, punk, update } = useOmarPunkData(tokenId);
+  const [isTransfering, setIsTransfering] = useState(false);
+
+  const transfer = () => {
+    setIsTransfering(true);
+
+    const address = prompt("Into your address:");
+    const isAddres = library.utils.isAddress(address);
+
+    if (!isAddres) {
+      setIsTransfering(false);
+      toast({
+        title: "Addres incorrect",
+        description: "Address don't get to Ethereum",
+        status: "error",
+      });
+      return;
+    }
+
+    omarPunksContract.methods
+      .safeTransferFrom(punk.owner, address, tokenId)
+      .send({ from: account })
+      .on("error", (error) => {
+        setIsTransfering(false);
+        toast({
+          title: "Transaction error",
+          description: error.message,
+          status: "error",
+        });
+      })
+      .on("transactionHash", (txHash) => {
+        toast({
+          title: "Transaction send",
+          description: txHash,
+          status: "info",
+        });
+      })
+      .on("receipt", () => {
+        setIsTransfering(false);
+        toast({
+          title: "Transaction successful",
+          description: `The punk now belongs to ${address}`,
+          status: "success",
+        });
+        update();
+      });
+  };
 
   if (!active) return <RequestAccess />;
 
@@ -43,7 +94,12 @@ const Punk = () => {
           name={punk.name}
           image={punk.image}
         />
-        <Button disabled={account !== punk.owner} colorScheme="pink">
+        <Button
+          isLoading={isTransfering}
+          onClick={transfer}
+          disabled={account !== punk.owner}
+          colorScheme="pink"
+        >
           {account !== punk.owner ? "You aren't the owner" : "Transfer"}
         </Button>
       </Stack>

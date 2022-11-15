@@ -148,7 +148,7 @@ const Home = () => {
             isLoading={isMinting}
             onClick={mint}
           >
-            Obtén tu punk
+            Get you Punk!
           </Button>
           <Link to="/punks">
             <Button
@@ -159,7 +159,7 @@ const Home = () => {
               fontWeight={"normal"}
               px={6}
             >
-              Galería
+              Gallery
             </Button>
           </Link>
         </Stack>
