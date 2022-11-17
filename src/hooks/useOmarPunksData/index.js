@@ -1,3 +1,4 @@
+import { useWeb3React } from "@web3-react/core";
 import { useCallback, useEffect, useState } from "react";
 import useOmarPunks from "../useOmarPunks";
 
@@ -67,9 +68,10 @@ const getPunksData = async ({ omarPunks, tokenId }) => {
 };
 
 //Plural
-const useOmarPunksData = () => {
+const useOmarPunksData = ({ owner = null } = {}) => {
   const [punks, setPunks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { library } = useWeb3React();
   const omarPunks = useOmarPunks();
 
   const update = useCallback(async () => {
@@ -78,10 +80,23 @@ const useOmarPunksData = () => {
 
       let tokenIds;
 
-      const totalSupply = await omarPunks.methods.totalSupply().call();
-      tokenIds = new Array(parseInt(totalSupply))
-        .fill()
-        .map((_, index) => index);
+      if (!library.utils.isAddress(owner)) {
+        const totalSupply = await omarPunks.methods.totalSupply().call();
+
+        tokenIds = new Array(parseInt(totalSupply))
+          .fill()
+          .map((_, index) => index);
+      } else {
+        const balanceOf = await omarPunks.methods.balanceOf(owner).call();
+
+        const tokenIdsOfOwner = new Array(Number(balanceOf))
+          .fill()
+          .map((_, index) => {
+            return omarPunks.methods.tokenOfOwnerByIndex(owner, index).call();
+          });
+
+        tokenIds = await Promise.all(tokenIdsOfOwner);
+      }
 
       const punksPromise = tokenIds.map((tokenId) =>
         getPunksData({ omarPunks, tokenId })
@@ -93,7 +108,7 @@ const useOmarPunksData = () => {
 
       setLoading(false);
     }
-  }, [omarPunks]);
+  }, [omarPunks, owner, library?.utils]);
 
   useEffect(() => {
     update();
